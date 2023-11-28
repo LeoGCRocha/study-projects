@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { PrismaClient } from '@prisma/client'
+import { authenticateToken } from '../middlewares/authMiddleware'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -27,7 +28,7 @@ router.post('/', async (req, res) => {
 })
 
 // List users
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     const allUser = await prisma.user.findMany({
         select: {
             id: true,
@@ -40,7 +41,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get a single user
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params
     const user = await prisma.user.findUnique({
         where: {
@@ -54,7 +55,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Update user
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params
     const { bio, name, image } = req.body
     try {
@@ -77,7 +78,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // Delete a user
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params
         await prisma.user.delete({

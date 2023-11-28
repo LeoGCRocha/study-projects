@@ -10,16 +10,23 @@ const prisma = new PrismaClient()
 // Create Tweet
 router.post('/', async (req, res) => {
     try {
-        const { content, image, userId } = req.body
-        const result = await prisma.tweet.create({
-            data: {
-                content, 
-                image,
-                userId
-            }
-        })
-        res.json(result)
-    } catch(e) {
+        const { content, image } = req.body
+        // @ts-ignore
+        const user = req.user
+        try {
+            const userId = Number(user.id)
+            const result = await prisma.tweet.create({
+                data: {
+                    content, 
+                    image,
+                    userId
+                }
+            })
+            res.sendStatus(200)
+        } catch (e) {
+            return res.sendStatus(401)
+        }
+    } catch (e) {
         res.status(400).json({
             error: 'Cannot POST this tweet.'
         })
@@ -38,7 +45,7 @@ let customSelectToTweet = {
         user: {
             select: {
                 id: true,
-                name: true, 
+                name: true,
                 username: true,
                 image: true,
             }
@@ -70,18 +77,24 @@ router.get('/:id', async (req, res) => {
 
 // Update Tweet
 router.put('/:id', async (req, res) => {
-    const { id } = req.params
-    const { content, image } = req.body
-    const result = await prisma.tweet.update({
-        where: {
-            id: Number(id)
-        },
-        data: {
-            content,
-            image
-        }
-    })
-    res.json(result)
+    try {
+        const { id } = req.params
+        const { content, image } = req.body
+        const result = await prisma.tweet.update({
+            where: {
+                id: Number(id)
+            },
+            data: {
+                content,
+                image
+            }
+        })
+        res.json(result)
+    } catch (e) {
+        res.status(400).json({
+            error: 'Cannot update this tweet, something bad happen.'
+        })
+    }
 })
 
 // Delete a Tweet
